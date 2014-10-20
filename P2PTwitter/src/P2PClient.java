@@ -6,89 +6,62 @@ import java.net.InetAddress;
 
 public class P2PClient implements Runnable {
 
-	public String unikey;
-
-	P2PClient(String unikey) {
-		this.unikey = unikey;
-	}
+	private DatagramSocket clientSocket;
 
 	public void run() {
 		try {
 
 			// Establish a connection
-			BufferedReader input = new BufferedReader(
-					new InputStreamReader(System.in));
-			DatagramSocket clientSocket = new DatagramSocket();
-			InetAddress IPAddress = InetAddress.getByName("localhost");
-			
+			BufferedReader input = new BufferedReader(new InputStreamReader(
+					System.in));
+			clientSocket = new DatagramSocket();
+
 			String previousStatus = "";
-			
+
+			// TODO: Implement a random timer for sending packets
+//			int rand = 0;
+
 			while (true) {
 				System.out.print("Status: ");
 
 				// Reading in the message
 				byte[] sendData = new byte[1024];
 				byte[] receiveData = new byte[1024];
-				
-				String sentence = unikey + ":" + input.readLine();
-				sendData = sentence.getBytes();
 
-				// Creating a packet
-				DatagramPacket sendPacket = new DatagramPacket(sendData,
-						sendData.length, IPAddress, 7014);
+				String status = input.readLine();
 
-				// Sending the packet
-				clientSocket.send(sendPacket);
-
-				// Receiving a packet
-				DatagramPacket receivePacket = new DatagramPacket(receiveData,
-						receiveData.length);
-				clientSocket.receive(receivePacket);
-				String modifiedSentence = new String(receivePacket.getData());
-
-				// Outputting the data
-				System.out.println("FROM SERVER:" + modifiedSentence);
-
-			
-
-				
-				String status = "";
-				int rand = 0;
-
-				while (true) {
-					status = input.readLine();
-					if (status != null) {
-						if (previousStatus.equals(status)) {
-							rand = 1000;
-							previousStatus = status;
-						} else {
-							rand = (int) (Math.random() * (3000 - 1000)) + 1000;
-							previousStatus = status;
-						}
-					}
-
-					byte[] buf = new byte[140];
-
-					DatagramSocket socket = new DatagramSocket(7014);
-					DatagramPacket packet = new DatagramPacket(buf, 150);
-
-					// work with the semicolon
-					String message = unikey + ":" + status;
-
-					buf = message.getBytes("ISO-8859-1");
-					socket.send(packet);
-
-					long startTime = System.currentTimeMillis();
-					long endTime = System.currentTimeMillis();
-
-					if (endTime - startTime > rand) {
-						socket.send(packet);
-						rand = (int) (Math.random() * (3000 - 1000)) + 1000;
-					}
+				// Determine when to send to server
+				if (status.equals(previousStatus)) {
+//					System.out.println("The previous status is the same as the new status");
+//					rand = (int) (Math.random() * (3000 - 1000)) + 1000;
+				} else {
+//					rand = 1000;
 				}
+
+				previousStatus = status;
+
+				String message = P2PTwitter.localUser.getUnikey() + ":" + status;
+				sendData = message.getBytes("ISO-8859-1");
+
+					
+				for (Profile p : P2PTwitter.profiles) {
+					InetAddress ip = InetAddress.getByName(p.getIp());
+					DatagramPacket sendPacket = new DatagramPacket(sendData,
+							sendData.length, ip, 7014);
+
+					clientSocket.send(sendPacket);
+				}
+				
+				printMessages();
 			}
 		} catch (Exception e) {
 
+		}
+	}
+	
+	public void printMessages() {
+		for (Profile p : P2PTwitter.profiles) {
+			System.out.println(p.getUnikey() + ":" + p.getMessage());
 		}
 	}
 }
