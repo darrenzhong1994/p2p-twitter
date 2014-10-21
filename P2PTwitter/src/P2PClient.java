@@ -48,7 +48,9 @@ public class P2PClient implements Runnable {
 				System.out.print(p.getPseudo());
 				System.out.println(" (" + p.getUnikey()
 						+ ") : not yet initialized]");
-			} else if (p.getStatus().equals("idle")) {
+			} else if (System.currentTimeMillis() - p.getDate() >= 20000) {
+				
+			} else if (System.currentTimeMillis() - p.getDate() >= 10000) {
 				System.out.print("# [");
 				System.out.print(p.getPseudo());
 				System.out.println(" (" + p.getUnikey()

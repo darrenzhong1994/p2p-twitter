@@ -1,16 +1,13 @@
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
-import java.net.InetAddress;
-import java.util.ArrayList;
-import java.util.Date;
-
 public class P2PServer implements Runnable {
 
+	DatagramSocket serverSocket;
 	public void run() {
 		try {
 
 			// Establish a connection on port 7014
-			DatagramSocket serverSocket = new DatagramSocket(7014);
+			 serverSocket = new DatagramSocket(7014);
 
 			while (true) {
 
@@ -23,23 +20,17 @@ public class P2PServer implements Runnable {
 
 				// Get the message
 				String sentence = new String(receivePacket.getData());
-				// System.out.println(sentence);
+				//System.out.println(sentence);
 
 				String[] message = sentence.split(":");
 
 				// Check to see that the unikey can be associated to an account
 				for (Profile p : P2PTwitter.profiles) {
-					long currentTime = System.currentTimeMillis();
-
 					if (message[0].equals(p.getUnikey())) {
 						p.setStatus(message[1]);
-						p.setDate(currentTime);
+						p.setDate(System.currentTimeMillis());
 						break;
-					}
-
-					if (currentTime - p.getDate() >= 10000) {
-						p.setStatus("idle");
-					}
+					} 
 				}
 			}
 		} catch (Exception e) {
