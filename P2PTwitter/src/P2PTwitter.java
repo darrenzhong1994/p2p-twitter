@@ -8,7 +8,6 @@ public class P2PTwitter {
 	public static Profile localUser;
 
 	public static void main(String[] args) {
-
 		if (args[0] != null) {
 			readParticipants(args[0]);
 
@@ -33,24 +32,32 @@ public class P2PTwitter {
 
 			String[] peers = props.getProperty("participants").split(",");
 
+			boolean localUserExists = false;
+			
 			for (int i = 0; i < peers.length; i++) {
-
 				String ip = props.getProperty(peers[i] + ".ip");
 				String pseudo = props.getProperty(peers[i] + ".pseudo");
 				String unikey = props.getProperty(peers[i] + ".unikey");
 
-				if (unikey.equals(localUnikey)) {
+				if (unikey.compareTo(localUnikey) == 0) {
 					localUser = new Profile(ip, pseudo, unikey);
+					localUserExists = true;
 				} else {
 					profiles.add(new Profile(ip, pseudo, unikey));
 				}
+			}
+			
+			if (!localUserExists) {
+				System.err.println("Local user does not exist in 'participants.properties' file.");
+				System.exit(1);
 			}
 
 			file.close();
 			props.clear();
 
 		} catch (Exception e) {
-			System.err.println(e.getMessage());
+			System.err.print("File 'participants.properties' not found.");
+			System.exit(1);
 		}
 	}
 }
