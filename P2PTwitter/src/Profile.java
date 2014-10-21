@@ -3,7 +3,7 @@ public class Profile {
 	private String ip;
 	private String pseudo;
 	private String unikey;
-	private String message;
+	private String status;
 	private long latestDate;
 
 	Profile(String ip, String pseudo, String unikey) {
@@ -28,8 +28,8 @@ public class Profile {
 		this.latestDate = newDate;
 	}
 
-	void setMessage(String message) {
-		this.message = message;
+	void setStatus(String status) {
+		this.status = status;
 	}
 
 	String getIp() {
@@ -44,8 +44,8 @@ public class Profile {
 		return unikey;
 	}
 
-	String getMessage() {
-		return message;
+	String getStatus() {
+		return status;
 	}
 
 	long getDate() {

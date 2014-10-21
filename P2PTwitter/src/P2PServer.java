@@ -12,43 +12,39 @@ public class P2PServer implements Runnable {
 			// Establish a connection on port 7014
 			DatagramSocket serverSocket = new DatagramSocket(7014);
 
-			byte[] receiveData = new byte[1024];
-			byte[] sendData = new byte[1024];
-
 			while (true) {
 
-				//Get the packet from the port
+				byte[] receiveData = new byte[1024];
+
+				// Get the packet from the port
 				DatagramPacket receivePacket = new DatagramPacket(receiveData,
 						receiveData.length);
 				serverSocket.receive(receivePacket);
 
 				// Get the message
 				String sentence = new String(receivePacket.getData());
+				// System.out.println(sentence);
+
 				String[] message = sentence.split(":");
 
 				// Check to see that the unikey can be associated to an account
 				for (Profile p : P2PTwitter.profiles) {
+					long currentTime = System.currentTimeMillis();
+
 					if (message[0].equals(p.getUnikey())) {
-						p.setDate(System.currentTimeMillis());
-						p.setMessage(message[1]);
+						p.setStatus(message[1]);
+						p.setDate(currentTime);
 						break;
 					}
+
+					if (currentTime - p.getDate() >= 10000) {
+						p.setStatus("idle");
+					}
 				}
-				
-
-				InetAddress IPAddress = receivePacket.getAddress();
-				int port = receivePacket.getPort();
-
-				String capitalizedSentence = sentence.toUpperCase();
-
-				sendData = capitalizedSentence.getBytes();
-				DatagramPacket sendPacket = new DatagramPacket(sendData,
-						sendData.length, IPAddress, port);
-				serverSocket.send(sendPacket);
-				serverSocket.close();
 			}
 		} catch (Exception e) {
 			System.err.println(e.getMessage());
 		}
 	}
+
 }

@@ -6,62 +6,80 @@ import java.net.InetAddress;
 
 public class P2PClient implements Runnable {
 
-	private DatagramSocket clientSocket;
+	DatagramSocket clientSocket;
 
 	public void run() {
 		try {
-
 			// Establish a connection
 			BufferedReader input = new BufferedReader(new InputStreamReader(
 					System.in));
 			clientSocket = new DatagramSocket();
 
-			String previousStatus = "";
-
-			// TODO: Implement a random timer for sending packets
-//			int rand = 0;
-
 			while (true) {
 				System.out.print("Status: ");
-
-				// Reading in the message
-				byte[] sendData = new byte[1024];
-				byte[] receiveData = new byte[1024];
-
 				String status = input.readLine();
-
-				// Determine when to send to server
-				if (status.equals(previousStatus)) {
-//					System.out.println("The previous status is the same as the new status");
-//					rand = (int) (Math.random() * (3000 - 1000)) + 1000;
+				if (status.isEmpty()) {
+					System.err.println("Status is empty. Retry.");
+				} else if (status.length() > 140) {
+					System.err
+							.println("Status is too long, 140 characters max. Retry");
 				} else {
-//					rand = 1000;
+					P2PTwitter.localUser.setStatus(status);
+					sendPacket();
+					printMessages();
 				}
-
-				previousStatus = status;
-
-				String message = P2PTwitter.localUser.getUnikey() + ":" + status;
-				sendData = message.getBytes("ISO-8859-1");
-
-					
-				for (Profile p : P2PTwitter.profiles) {
-					InetAddress ip = InetAddress.getByName(p.getIp());
-					DatagramPacket sendPacket = new DatagramPacket(sendData,
-							sendData.length, ip, 7014);
-
-					clientSocket.send(sendPacket);
-				}
-				
-				printMessages();
 			}
 		} catch (Exception e) {
 
 		}
 	}
-	
+
 	public void printMessages() {
+		System.out.println("### P2P tweets ###");
+
+		System.out.print("# ");
+		System.out.print(P2PTwitter.localUser.getPseudo());
+		System.out.println(" (" + P2PTwitter.localUser.getUnikey() + ") : "
+				+ P2PTwitter.localUser.getStatus());
+
 		for (Profile p : P2PTwitter.profiles) {
-			System.out.println(p.getUnikey() + ":" + p.getMessage());
+			if (p.getStatus() == null) {
+				System.out.print("# [");
+				System.out.print(p.getPseudo());
+				System.out.println(" (" + p.getUnikey()
+						+ ") : not yet initialized]");
+			} else if (p.getStatus().equals("idle")) {
+				System.out.print("# [");
+				System.out.print(p.getPseudo());
+				System.out.println(" (" + p.getUnikey()
+						+ ") : idle]");
+			} else {
+
+				System.out.print("# ");
+				System.out.print(p.getPseudo());
+				System.out.println(" (" + p.getUnikey() + ") : "
+						+ p.getStatus());
+			}
+		}
+		System.out.println("### End tweets ###");
+	}
+
+	public void sendPacket() {
+		try {
+			for (Profile p : P2PTwitter.profiles) {
+				InetAddress ip = InetAddress.getByName(p.getIp());
+				byte[] sendData = new byte[1024];
+				String message = P2PTwitter.localUser.getUnikey() + ":"
+						+ P2PTwitter.localUser.getStatus();
+
+				sendData = message.getBytes("ISO-8859-1");
+				DatagramPacket sendPacket = new DatagramPacket(sendData,
+						sendData.length, ip, 7014);
+				clientSocket.send(sendPacket);
+			}
+
+		} catch (Exception e) {
+			System.err.println(e.getMessage());
 		}
 	}
 }

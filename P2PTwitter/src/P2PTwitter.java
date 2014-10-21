@@ -1,6 +1,5 @@
 import java.io.FileReader;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.Properties;
 
 public class P2PTwitter {
@@ -18,6 +17,9 @@ public class P2PTwitter {
 
 			Thread server = new Thread(new P2PServer());
 			server.start();
+			
+			Thread communication = new Thread(new Communication());
+			communication.start();
 		}
 	}
 
@@ -37,7 +39,7 @@ public class P2PTwitter {
 				String pseudo = props.getProperty(peers[i] + ".pseudo");
 				String unikey = props.getProperty(peers[i] + ".unikey");
 
-				if (localUnikey.equals(unikey)) {
+				if (unikey.equals(localUnikey)) {
 					localUser = new Profile(ip, pseudo, unikey);
 				} else {
 					profiles.add(new Profile(ip, pseudo, unikey));
