@@ -17,7 +17,13 @@ public class P2PServer implements Runnable {
 
 				String sentence = new String(receivePacket.getData());
 
+				if (sentence == null || sentence.isEmpty()) {
+					continue;
+				}
 				int index = sentence.indexOf(":");
+				if (index < 1) {
+					continue;
+				}
 				String unikey = sentence.substring(0, index);
 				String status = sentence.substring(index + 1, sentence.length());
 				status = status.replace("\\:", ":");
